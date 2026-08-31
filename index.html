@@ -1,5 +1,55 @@
-<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Nighthawk Click Quest</title><link rel="stylesheet" href="style.css"></head><body>
-<main class="shell"><header><div><h1>NIGHTHAWK CLICK QUEST</h1><p>Master Your Mouse. Beat the Clock. Earn Elite Status.</p></div><button id="soundBtn" class="small">Sound: On</button></header>
-<section class="hud"><div>LEVEL <b id="level">1/5</b></div><div>SCORE <b id="score">0</b></div><div>TIME <b id="time">0</b></div><div>POPPED <b id="popped">0</b></div><div>ACCURACY <b id="accuracy">100%</b></div><div>STREAK <b id="streak">0</b></div></section>
-<section id="arena" class="arena"><div class="watermarks"><img src="northwoods.jpg"><img src="cte.jpg"></div><div id="overlay" class="overlay"><div class="card"><h2>Nighthawk Click Quest</h2><p>Complete all 5 levels in about 4 minutes.</p><div class="rules"><span>🔴 Red = LEFT CLICK</span><span>🔵 Blue = RIGHT CLICK</span><span>⭐ Gold = BONUS, either click</span><span>⚫ Black = DECOY, do not click</span></div><button id="startBtn">START QUEST</button></div></div><div id="toast" class="toast"></div></section>
-<footer>FOCUS • REACT • CLICK • WIN</footer></main><script src="game.js"></script></body></html>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Nighthawk Click Quest</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<main class="shell">
+  <header>
+    <div>
+      <h1>NIGHTHAWK CLICK QUEST</h1>
+      <p>Master Your Mouse. Beat the Clock. Earn Elite Status.</p>
+    </div>
+    <button id="soundBtn" class="small">Sound: On</button>
+  </header>
+
+  <section class="hud">
+    <div>LEVEL <b id="level">1/5</b></div>
+    <div>SCORE <b id="score">0</b></div>
+    <div>TIME <b id="time">0s</b></div>
+    <div>POPPED <b id="popped">0/18</b></div>
+    <div>ACCURACY <b id="accuracy">100%</b></div>
+    <div>STREAK <b id="streak">0</b></div>
+  </section>
+
+  <section id="arena" class="arena">
+    <div class="watermarks" aria-hidden="true">
+      <img src="northwoods.jpg" alt="">
+      <img src="cte.jpg" alt="">
+    </div>
+
+    <div id="overlay" class="overlay">
+      <div class="card">
+        <h2>Nighthawk Click Quest</h2>
+        <p>Complete all 5 levels in about 4 minutes.</p>
+        <div class="rules">
+          <span>🔴 Red = LEFT CLICK</span>
+          <span>🔵 Blue = RIGHT CLICK</span>
+          <span>⭐ Gold = BONUS, either click</span>
+          <span>⚫ Black = DECOY, do not click</span>
+        </div>
+        <button id="startBtn">START QUEST</button>
+      </div>
+    </div>
+
+    <div id="toast" class="toast"></div>
+  </section>
+
+  <footer>FOCUS • REACT • CLICK • WIN <span style="opacity:.55">v2</span></footer>
+</main>
+<script src="game.js"></script>
+</body>
+</html>
