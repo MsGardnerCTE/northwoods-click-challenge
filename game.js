@@ -1,201 +1,22 @@
-const gameArea = document.getElementById('gameArea');
-const startBtn = document.getElementById('startBtn');
-const restartBtn = document.getElementById('restartBtn');
-const startOverlay = document.getElementById('startOverlay');
-const endOverlay = document.getElementById('endOverlay');
-const endTitle = document.getElementById('endTitle');
-const endMessage = document.getElementById('endMessage');
-const ratingEl = document.getElementById('rating');
-const scoreEl = document.getElementById('score');
-const timerEl = document.getElementById('timer');
-const mistakesEl = document.getElementById('mistakes');
-
-const TARGET = 20;
-const GAME_SECONDS = 20;
-
-let score = 0;
-let mistakes = 0;
-let totalClicks = 0;
-let running = false;
-let startTime = 0;
-let timerFrame = null;
-let spawnInterval = null;
-
-startBtn.addEventListener('click', startGame);
-restartBtn.addEventListener('click', startGame);
-
-gameArea.addEventListener('contextmenu', (event) => {
-  event.preventDefault();
-});
-
-function startGame() {
-  clearGame();
-
-  score = 0;
-  mistakes = 0;
-  totalClicks = 0;
-  running = true;
-  startTime = performance.now();
-
-  updateStats(GAME_SECONDS);
-  startOverlay.classList.remove('visible');
-  endOverlay.classList.remove('visible');
-
-  spawnBalloon();
-  setTimeout(() => running && spawnBalloon(), 180);
-  setTimeout(() => running && spawnBalloon(), 360);
-
-  spawnInterval = setInterval(spawnBalloon, 500);
-  timerFrame = requestAnimationFrame(updateTimer);
-}
-
-function updateTimer(now) {
-  if (!running) return;
-
-  const elapsed = (now - startTime) / 1000;
-  const remaining = Math.max(0, GAME_SECONDS - elapsed);
-  timerEl.textContent = remaining.toFixed(1);
-
-  if (remaining <= 0) {
-    endGame(false);
-    return;
-  }
-
-  timerFrame = requestAnimationFrame(updateTimer);
-}
-
-function spawnBalloon() {
-  if (!running) return;
-
-  const balloon = document.createElement('div');
-  const color = Math.random() < 0.5 ? 'red' : 'blue';
-
-  balloon.className = `balloon ${color}`;
-  balloon.dataset.color = color;
-  balloon.setAttribute('role', 'button');
-  balloon.setAttribute('aria-label', `${color} balloon`);
-
-  const areaWidth = gameArea.clientWidth;
-  const balloonWidth = window.innerWidth <= 760 ? 66 : 74;
-  const left = Math.max(5, Math.random() * (areaWidth - balloonWidth - 10));
-  const speed = randomBetween(3.0, 4.9);
-
-  balloon.style.left = `${left}px`;
-  balloon.style.bottom = '-120px';
-  balloon.style.animationDuration = `${speed}s`;
-
-  balloon.addEventListener('mousedown', handleBalloonMouseDown);
-  balloon.addEventListener('animationend', () => balloon.remove());
-
-  gameArea.appendChild(balloon);
-}
-
-function handleBalloonMouseDown(event) {
-  if (!running) return;
-
-  event.preventDefault();
-  event.stopPropagation();
-
-  const balloon = event.currentTarget;
-  if (balloon.dataset.popped === 'true') return;
-
-  if (event.button !== 0 && event.button !== 2) return;
-
-  totalClicks += 1;
-
-  const color = balloon.dataset.color;
-  const correct =
-    (color === 'red' && event.button === 0) ||
-    (color === 'blue' && event.button === 2);
-
-  if (correct) {
-    balloon.dataset.popped = 'true';
-    score += 1;
-    scoreEl.textContent = `${score} / ${TARGET}`;
-    showFeedback(event.clientX, event.clientY, '+1', true);
-
-    balloon.classList.add('pop');
-    setTimeout(() => balloon.remove(), 160);
-
-    if (score >= TARGET) {
-      endGame(true);
-    }
-  } else {
-    mistakes += 1;
-    mistakesEl.textContent = mistakes;
-    showFeedback(event.clientX, event.clientY, 'Wrong click!', false);
-
-    balloon.animate(
-      [
-        { transform: 'translateX(0)' },
-        { transform: 'translateX(-8px)' },
-        { transform: 'translateX(8px)' },
-        { transform: 'translateX(0)' }
-      ],
-      { duration: 180 }
-    );
-  }
-}
-
-function showFeedback(clientX, clientY, text, correct) {
-  const rect = gameArea.getBoundingClientRect();
-  const feedback = document.createElement('div');
-  feedback.className = `feedback ${correct ? 'correct' : 'wrong'}`;
-  feedback.textContent = text;
-  feedback.style.left = `${clientX - rect.left}px`;
-  feedback.style.top = `${clientY - rect.top}px`;
-  gameArea.appendChild(feedback);
-  setTimeout(() => feedback.remove(), 750);
-}
-
-function endGame(won) {
-  if (!running) return;
-
-  running = false;
-  clearInterval(spawnInterval);
-  cancelAnimationFrame(timerFrame);
-
-  const elapsed = Math.min(GAME_SECONDS, (performance.now() - startTime) / 1000);
-  const remaining = Math.max(0, GAME_SECONDS - elapsed);
-  const accuracy = totalClicks === 0 ? 0 : Math.round((score / totalClicks) * 100);
-
-  document.querySelectorAll('.balloon').forEach((balloon) => balloon.remove());
-
-  if (won) {
-    endTitle.textContent = 'Challenge Complete!';
-    endMessage.innerHTML = `You popped <strong>${score} of ${TARGET}</strong> balloons in <strong>${elapsed.toFixed(1)} seconds</strong>.<br>Accuracy: <strong>${accuracy}%</strong> • Mistakes: <strong>${mistakes}</strong>`;
-  } else {
-    endTitle.textContent = 'Time!';
-    endMessage.innerHTML = `You popped <strong>${score} of ${TARGET}</strong> balloons.<br>Accuracy: <strong>${accuracy}%</strong> • Mistakes: <strong>${mistakes}</strong><br>Try again and beat your score!`;
-  }
-
-  ratingEl.textContent = getRating(won, accuracy, mistakes, remaining);
-  endOverlay.classList.add('visible');
-}
-
-function getRating(won, accuracy, mistakes, remaining) {
-  if (won && accuracy === 100 && mistakes === 0 && remaining >= 5) return '🏆 CLICK MASTER';
-  if (won && accuracy >= 95) return '⭐ SHARP SHOOTER';
-  if (won) return '🎯 CLICK CHAMP';
-  if (accuracy >= 85) return '💪 ALMOST THERE';
-  return '🚀 KEEP PRACTICING';
-}
-
-function clearGame() {
-  running = false;
-  clearInterval(spawnInterval);
-  cancelAnimationFrame(timerFrame);
-
-  document.querySelectorAll('.balloon, .feedback').forEach((element) => element.remove());
-}
-
-function updateStats(time) {
-  scoreEl.textContent = `0 / ${TARGET}`;
-  mistakesEl.textContent = '0';
-  timerEl.textContent = Number(time).toFixed(1);
-  ratingEl.textContent = '';
-}
-
-function randomBetween(min, max) {
-  return Math.random() * (max - min) + min;
-}
+const arena=document.getElementById('arena'),overlay=document.getElementById('overlay'),startBtn=document.getElementById('startBtn');
+const ui={level:document.getElementById('level'),score:document.getElementById('score'),time:document.getElementById('time'),popped:document.getElementById('popped'),accuracy:document.getElementById('accuracy'),streak:document.getElementById('streak')};
+const levels=[
+{name:'ROOKIE FLIGHT',seconds:42,target:18,spawn:1050,speed:[6.2,8.2],size:82,desc:'Learn the controls. Red left, blue right.'},
+{name:'NIGHTHAWK RUN',seconds:44,target:22,spawn:900,speed:[5.4,7.4],size:76,desc:'More balloons. Keep your accuracy high.'},
+{name:'SPEED ROUND',seconds:44,target:25,spawn:760,speed:[4.6,6.3],size:70,desc:'Faster balloons and less reaction time.'},
+{name:'PRECISION',seconds:46,target:24,spawn:820,speed:[4.8,6.5],size:54,desc:'Smaller targets test mouse precision.'},
+{name:'NIGHTHAWK ELITE',seconds:48,target:30,spawn:650,speed:[4.0,5.8],size:62,desc:'Everything combined. Earn Elite status!'}];
+let L=0,score=0,popped=0,totalClicks=0,correct=0,streak=0,bestStreak=0,mistakes=0,time=0,spawnTimer,countTimer,running=false,sound=true,levelPops=0;
+function beep(freq=500,d=.05){if(!sound)return;try{const a=new (AudioContext||webkitAudioContext)(),o=a.createOscillator(),g=a.createGain();o.frequency.value=freq;o.connect(g);g.connect(a.destination);g.gain.value=.035;o.start();o.stop(a.currentTime+d)}catch(e){}}
+document.getElementById('soundBtn').onclick=e=>{sound=!sound;e.target.textContent='Sound: '+(sound?'On':'Off')};
+function update(){ui.level.textContent=`${L+1}/5`;ui.score.textContent=score;ui.time.textContent=time+'s';ui.popped.textContent=levelPops+'/'+levels[L].target;ui.accuracy.textContent=(totalClicks?Math.round(correct/totalClicks*100):100)+'%';ui.streak.textContent=streak}
+function toast(t){const x=document.getElementById('toast');x.textContent=t;x.classList.remove('show');void x.offsetWidth;x.classList.add('show')}
+function clearBalloons(){arena.querySelectorAll('.balloon').forEach(x=>x.remove())}
+function showCard(title,body,button,fn){overlay.innerHTML=`<div class="card"><h2>${title}</h2>${body}<button id="cardBtn">${button}</button></div>`;overlay.classList.remove('hidden');document.getElementById('cardBtn').onclick=fn}
+function beginQuest(){L=0;score=popped=totalClicks=correct=streak=bestStreak=mistakes=0;beginLevel()}
+function beginLevel(){clearInterval(spawnTimer);clearInterval(countTimer);clearBalloons();running=false;const x=levels[L];showCard(`LEVEL ${L+1}: ${x.name}`,`<p>${x.desc}</p><p><b>Goal:</b> Pop ${x.target} balloons in ${x.seconds} seconds.</p>`,`START LEVEL ${L+1}`,()=>{overlay.classList.add('hidden');running=true;levelPops=0;time=x.seconds;update();spawn();spawnTimer=setInterval(spawn,x.spawn);countTimer=setInterval(()=>{time--;update();if(time<=0)finishLevel(false)},1000)})}
+function spawn(){if(!running)return;const x=levels[L],b=document.createElement('div');let r=Math.random(),type=r<.43?'red':r<.86?'blue':r<.93?'gold':'black';b.className='balloon '+type;b.dataset.type=type;let sz=x.size*(.86+Math.random()*.28);b.style.width=sz+'px';b.style.height=sz*1.22+'px';b.style.left=Math.random()*(arena.clientWidth-sz-10)+5+'px';b.style.bottom=-sz*1.3+'px';arena.appendChild(b);let y=-sz*1.3,speed=x.speed[0]+Math.random()*(x.speed[1]-x.speed[0]);let anim=setInterval(()=>{if(!running||!b.isConnected){clearInterval(anim);return}y+=2.3;b.style.bottom=y+'px';if(y>arena.clientHeight+20){clearInterval(anim);b.remove()}},speed);b.oncontextmenu=e=>e.preventDefault();b.onmousedown=e=>{e.preventDefault();if(!running)return;handle(b,e.button)} }
+function handle(b,button){let t=b.dataset.type;totalClicks++;let ok=(t==='red'&&button===0)||(t==='blue'&&button===2)||(t==='gold'&&(button===0||button===2));if(t==='black'){mistakes++;streak=0;score=Math.max(0,score-100);toast('💣 DECOY! -100');beep(140,.12);b.remove();update();return}if(ok){correct++;streak++;bestStreak=Math.max(bestStreak,streak);let pts=t==='gold'?300:100+Math.min(streak,10)*10;score+=pts;levelPops++;popped++;b.classList.add('pop');setTimeout(()=>b.remove(),160);beep(t==='gold'?900:620);if(t==='gold')toast('⭐ BONUS +300!');else if(streak===5||streak===10||streak===15)toast(`🔥 ${streak} CLICK STREAK!`);update();if(levelPops>=levels[L].target)finishLevel(true)}else{mistakes++;streak=0;score=Math.max(0,score-50);toast('WRONG CLICK -50');beep(180,.09);update()}}
+function finishLevel(success){if(!running)return;running=false;clearInterval(spawnTimer);clearInterval(countTimer);clearBalloons();let acc=totalClicks?Math.round(correct/totalClicks*100):100;if(success){score+=time*20;update();if(L<4){showCard('LEVEL COMPLETE!',`<p>Great work. You cleared <b>${levels[L].name}</b>.</p><p>Score: <b>${score}</b> &nbsp; Accuracy: <b>${acc}%</b></p>`,'NEXT LEVEL',()=>{L++;beginLevel()})}else finishQuest()}else{showCard('TIME!',`<p>You popped <b>${levelPops}/${levels[L].target}</b>.</p><p>Retry this level to continue your quest.</p>`,'RETRY LEVEL',beginLevel)}}
+function finishQuest(){let acc=totalClicks?Math.round(correct/totalClicks*100):100,rank=acc>=95&&mistakes<=5?'🏆 NIGHTHAWK ELITE':acc>=90?'🥇 NIGHTHAWK ACE':acc>=82?'🥈 NIGHTHAWK PRO':acc>=72?'🥉 NIGHTHAWK FLYER':'🏅 NIGHTHAWK ROOKIE';showCard('QUEST COMPLETE!',`<p style="font-size:25px"><b>${rank}</b></p><p>Final Score: <b>${score}</b><br>Accuracy: <b>${acc}%</b><br>Total Balloons: <b>${popped}</b><br>Best Streak: <b>${bestStreak}</b><br>Mistakes: <b>${mistakes}</b></p>`,'PLAY AGAIN',beginQuest)}
+startBtn.onclick=beginQuest;arena.addEventListener('contextmenu',e=>e.preventDefault());update();
