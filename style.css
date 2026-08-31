@@ -40,23 +40,28 @@ body {
 }
 
 .brand-header {
-  display: grid;
-  grid-template-columns: 150px 1fr 150px;
+  display: flex;
+  justify-content: center;
   align-items: center;
-  gap: 18px;
-  padding: 12px 18px;
+  padding: 18px 22px;
   margin-bottom: 12px;
   border-radius: 24px;
   background: linear-gradient(180deg, rgba(4, 22, 50, 0.96), rgba(10, 33, 68, 0.94));
   border: 2px solid rgba(143, 200, 255, 0.35);
   box-shadow: var(--shadow);
+  position: relative;
+  overflow: hidden;
 }
 
-.brand-logo {
-  width: 100%;
-  max-height: 122px;
-  object-fit: contain;
-  filter: drop-shadow(0 5px 8px rgba(0, 0, 0, 0.32));
+.brand-header::after {
+  content: "";
+  position: absolute;
+  left: 12%;
+  right: 12%;
+  bottom: 0;
+  height: 3px;
+  background: linear-gradient(90deg, transparent, var(--orange), var(--blue-light), transparent);
+  opacity: 0.9;
 }
 
 .title-wrap {
@@ -190,14 +195,34 @@ h1 {
 .game-area::before { top: 18px; }
 .game-area::after { bottom: 18px; }
 
-.game-watermark {
+.watermark-layer {
   position: absolute;
-  inset: 50% auto auto 50%;
-  width: min(52%, 440px);
-  transform: translate(-50%, -50%);
-  opacity: 0.1;
+  inset: 0;
+  z-index: 1;
   pointer-events: none;
-  filter: saturate(0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(28px, 7vw, 100px);
+  padding: 40px;
+  overflow: hidden;
+}
+
+.watermark-logo {
+  width: min(31vw, 330px);
+  max-height: 70%;
+  object-fit: contain;
+  opacity: 0.075;
+  filter: grayscale(0.1) saturate(0.8) contrast(1.1);
+  mix-blend-mode: screen;
+}
+
+.watermark-school {
+  transform: rotate(-4deg) scale(1.06);
+}
+
+.watermark-cte {
+  transform: rotate(4deg) scale(1.02);
 }
 
 .balloon {
@@ -292,19 +317,13 @@ h1 {
   box-shadow: 0 24px 70px rgba(0, 0, 0, 0.45);
 }
 
-.panel-logos {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 18px;
-  margin-bottom: 10px;
-}
-
-.panel-logos img {
-  width: 88px;
-  height: 76px;
-  object-fit: contain;
-  border-radius: 12px;
+ .panel-kicker {
+  margin: 0 0 8px;
+  color: var(--blue-light);
+  font-size: 0.82rem;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
 }
 
 .panel h2 {
@@ -423,5 +442,17 @@ h1 {
   .balloon {
     width: 66px;
     height: 83px;
+  }
+}
+
+@media (max-width: 760px) {
+  .watermark-layer {
+    gap: 10px;
+    padding: 28px 16px;
+  }
+
+  .watermark-logo {
+    width: 42vw;
+    opacity: 0.065;
   }
 }

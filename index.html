@@ -9,13 +9,11 @@
 <body>
   <main class="game-shell">
     <header class="brand-header">
-      <img src="northwoods.jpg" alt="Northwoods Nighthawks Middle School logo" class="brand-logo school-logo" />
       <div class="title-wrap">
         <p class="eyebrow">Northwoods Middle School CTE</p>
         <h1>Click Challenge</h1>
         <p class="subtitle">Pop 20 balloons in 20 seconds!</p>
       </div>
-      <img src="cte.jpg" alt="Charleston County School District CTE logo" class="brand-logo cte-logo" />
     </header>
 
     <section class="instructions" aria-label="Game instructions">
@@ -49,15 +47,15 @@
     </section>
 
     <section id="gameArea" class="game-area" aria-label="Balloon game area">
-      <img src="northwoods.jpg" alt="" class="game-watermark" aria-hidden="true" />
+      <div class="watermark-layer" aria-hidden="true">
+        <img src="northwoods.jpg" alt="" class="watermark-logo watermark-school" />
+        <img src="cte.jpg" alt="" class="watermark-logo watermark-cte" />
+      </div>
 
       <div id="startOverlay" class="overlay visible">
         <div class="panel">
-          <div class="panel-logos" aria-hidden="true">
-            <img src="northwoods.jpg" alt="" />
-            <img src="cte.jpg" alt="" />
-          </div>
-          <h2>Northwoods Click Challenge</h2>
+          <p class="panel-kicker">Northwoods Middle School CTE</p>
+          <h2>Click Challenge</h2>
           <p class="challenge-line">Pop <strong>20 balloons</strong> in <strong>20 seconds</strong>.</p>
           <div class="mini-rules">
             <span><span class="dot red"></span> Red = left-click</span>
@@ -70,6 +68,7 @@
 
       <div id="endOverlay" class="overlay">
         <div class="panel results-panel">
+          <p class="panel-kicker">Northwoods Nighthawks</p>
           <h2 id="endTitle">Game Over</h2>
           <p id="endMessage"></p>
           <div id="rating" class="rating"></div>
